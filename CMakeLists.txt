@@ -66,7 +66,10 @@ target_link_libraries(rx_power ${RX_TOOLS_LIBS})
 add_executable(rx_sdr src/rtl_sdr.c)
 target_link_libraries(rx_sdr ${RX_TOOLS_LIBS})
 
+add_executable(rx_sdr_ipc src/rx_sdr_ipc.c)
+target_link_libraries(rx_sdr_ipc ${RX_TOOLS_LIBS})
+
 ########################################################################
 # Install executables
 ########################################################################
-install(TARGETS rx_fm rx_power rx_sdr DESTINATION bin)
+install(TARGETS rx_fm rx_power rx_sdr rx_sdr_ipc DESTINATION bin)
