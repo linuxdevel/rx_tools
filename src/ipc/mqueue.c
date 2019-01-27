@@ -1,0 +1,107 @@
+#include <stdio.h> 
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ipc.h> 
+#include <sys/msg.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include "mqueue.h"
+
+#define MAX_MSG_SZ 80
+
+typedef struct {
+           long int mtype;
+           char mtext[MAX_MSG_SZ+1];
+} RX_SDR_MSG_BUF;
+
+const char *mqueue_key = "/tmp/rx_sdr_ipc.queue";
+
+static void init_q_file();
+
+int mqueue_open(void) {
+        key_t key;
+        int msg_id;
+        
+        init_q_file(); 
+        
+        key = ftok(mqueue_key, 65);
+
+        if (-1 == key) {
+                perror("mqueue.open: ftok() failed");
+                exit(1);
+                
+        }
+        msg_id = msgget(key, 0666 | IPC_CREAT);
+        if (-1 == msg_id) {
+                perror("mqueue.open: msgget() failed");
+                exit(1);
+                
+        }
+        
+        return msg_id;
+}
+
+int mqueue_close(int qid) {
+        return 0;
+}
+
+int mqueue_send(int qid, const char *out) {
+        int rc;
+        size_t out_len;
+        RX_SDR_MSG_BUF msg;
+        
+        msg.mtype = 1;
+        
+        snprintf(msg.mtext, sizeof(msg.mtext), out);
+        
+        if (msgsnd(qid, (void *) &msg, sizeof(msg.mtext), IPC_NOWAIT) == -1) {
+                perror("msgsnd error");
+                exit(EXIT_FAILURE);
+        }
+                
+        return rc;
+}
+
+int mqueue_rcv_nw(int qid, char **in) {
+        int rc = -1;
+        RX_SDR_MSG_BUF msg = {0};
+        // fprintf(stderr, "Trying to receive\n");
+        if (msgrcv(qid, &msg, sizeof(msg.mtext), 1, MSG_NOERROR | IPC_NOWAIT) == -1) {
+              if (errno != ENOMSG) {
+                   perror("msgrcv");
+                   exit(EXIT_FAILURE);
+               }
+               //fprintf(stderr, "no msg available now\n");
+               // No message available now printf("No message available for msgrcv()\n");
+        } else {
+                rc = 0;
+                size_t msglen = strlen(msg.mtext);
+                *in = malloc(msglen + 1);
+                memmove(*in, msg.mtext, msglen);
+                *in[msglen] = 0;
+        }
+        
+        return rc;
+}
+
+void mqueue_flush(int qid) {
+        char *msg = NULL;
+        while (0 == mqueue_rcv_nw(qid, &msg)) {
+                // printf("got message %s\n", msg);
+                free(msg);
+        }
+}
+
+static void init_q_file() {
+        FILE *f;
+
+        f = fopen(mqueue_key, "a");
+
+        if (!f) {
+                perror("mqueue init_q_file error");
+                exit(1);
+        }
+        fclose(f);
+}

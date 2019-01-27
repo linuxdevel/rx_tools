@@ -6,7 +6,7 @@ project(rx_tools C)
 
 #local include directories first
 include_directories(${PROJECT_SOURCE_DIR}/src/convenience)
-
+include_directories(${PROJECT_SOURCE_DIR}/src/ipc)
 #include local cmake modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -51,6 +51,7 @@ endif ()
 ########################################################################
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 list(APPEND COMMON_SOURCES src/convenience/convenience.c)
+list(APPEND COMMON_SOURCES src/ipc/mqueue.c)
 add_library(common STATIC ${COMMON_SOURCES})
 list(APPEND RX_TOOLS_LIBS common)
 
@@ -73,3 +74,4 @@ target_link_libraries(rx_sdr_ipc ${RX_TOOLS_LIBS})
 # Install executables
 ########################################################################
 install(TARGETS rx_fm rx_power rx_sdr rx_sdr_ipc DESTINATION bin)
+

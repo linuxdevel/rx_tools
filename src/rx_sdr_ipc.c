@@ -6,29 +6,26 @@
 #include <stdio.h> 
 #include <sys/ipc.h> 
 #include <sys/msg.h>
-#include "rx_sdr_ipc.h"
+#include "mqueue.h"
 
 
 
 int main(int argc, char **argv) {
-	key_t key;
-        RX_SDR_MSG_BUF msg;
-	int msg_id;
+	int qid;
+        int rc;
+        char *msg = NULL;
+        
+        qid = mqueue_open();
+        
+        mqueue_flush(qid);
+        
+	// rc = mqueue_send(qid, "CFREQ:145500000");
+        rc = mqueue_send(qid, "1234567");
+        rc = mqueue_rcv_nw(qid, &msg);
 
-        key = ftok(mqueue_key, 65);
-
-        msg_id = msgget(key, 0666 | IPC_CREAT);
-	msg.msg_type = MSG_TYPE_HELO;
-	sprintf(msg.msg, "Hello");
-	msg.msg_len = strlen(msg.msg);
-
-	if (0 != msgsnd(msg_id, &msg, sizeof(RX_SDR_MSG_BUF), 0)) {
-                perror("msgsnd failed");
-		exit(1);
-	}
-
-	printf("msgsnd OK\n");
-
+        if (!rc) printf("Received: %s\n", msg);
+        
+        free(msg);
         return 0;
 }
 
