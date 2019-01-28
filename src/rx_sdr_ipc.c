@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
         
         mqueue_flush(qid);
         
-	rc = mqueue_send(qid, "CFREQ:145500000");
+	rc = mqueue_send(qid, "CFREQ:120450000");
 
 	if (rc) {
 		fprintf(stderr, "mqueue_Send failed\n");

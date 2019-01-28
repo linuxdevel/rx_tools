@@ -330,10 +330,12 @@ int main(int argc, char **argv)
                         
                         if (0 == mqueue_rcv_nw(qid, &queue_msg)) {
                                 // We got a  message.. lets handle it
-                                if (strlen(queue_msg) > 7 && memcmp(queue_msg, "CFREQ:", 6)) {
+                                if (strlen(queue_msg) > 7 && 0 == memcmp(queue_msg, "CFREQ:", 6)) {
                                         frequency = (uint32_t)atofs(queue_msg+6);
                                         verbose_set_frequency(dev, frequency);
+					fprintf(stderr, "*** got frequency: %d\n", frequency);
                                 }
+				else fprintf(stderr, "*** got: %s not handled\n", queue_msg);
                                 free(queue_msg);
                         }
 		}
