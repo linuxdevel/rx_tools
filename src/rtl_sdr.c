@@ -242,7 +242,7 @@ int main(int argc, char **argv)
         // Configure message queue for signalling commands
         // to this application
         qid = mqueue_open();
-        //mqueue_flush(qid);
+        mqueue_flush(qid);
         
 	/* Reset endpoint before we start reading from it (mandatory) */
 	verbose_reset_buffer(dev);
