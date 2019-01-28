@@ -7,13 +7,12 @@
 #include <sys/ipc.h> 
 #include <sys/msg.h>
 #include "mqueue.h"
-
-
-
+/* Testprogram that shows how to send new center frequency
+ * to rx_sdr
+ * */
 int main(int argc, char **argv) {
 	int qid;
         int rc;
-        //char *msg = NULL;
         
         qid = mqueue_open();
         
@@ -26,11 +25,6 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-        //rc = mqueue_rcv_nw(qid, &msg);
-
-        // if (!rc) printf("Received: %s\n", msg);
-        
-        //if (msg) free(msg);
         return 0;
 }
 
