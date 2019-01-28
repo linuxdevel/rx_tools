@@ -33,6 +33,7 @@
 #endif
 
 #include "convenience.h"
+#include "mqueue.h"
 #include <SoapySDR/Device.h>
 #include <SoapySDR/Formats.h>
 
@@ -45,6 +46,7 @@ static int do_exit = 0;
 static uint32_t samples_to_read = 0;
 static SoapySDRDevice *dev = NULL;
 static SoapySDRStream *stream = NULL;
+static int qid = -1; // IPC Message queue id
 
 void usage(void)
 {
@@ -104,6 +106,7 @@ int main(int argc, char **argv)
 	uint32_t samp_rate = DEFAULT_SAMPLE_RATE;
 	uint32_t out_block_size = DEFAULT_BUF_LENGTH;
 	char *output_format = SOAPY_SDR_CU8;
+        char *queue_msg; // signalling message
 
 	while ((opt = getopt(argc, argv, "d:f:g:s:b:n:p:D:SF:")) != -1) {
 		switch (opt) {
@@ -236,6 +239,11 @@ int main(int argc, char **argv)
 		}
 	}
 
+        // Configure message queue for signalling commands
+        // to this application
+        qid = mqueue_open();
+        //mqueue_flush(qid);
+        
 	/* Reset endpoint before we start reading from it (mandatory) */
 	verbose_reset_buffer(dev);
 
@@ -319,6 +327,15 @@ int main(int argc, char **argv)
 
 			if (samples_to_read > 0)
 				samples_to_read -= n_read;
+                        
+                        if (0 == mqueue_rcv_nw(qid, &queue_msg)) {
+                                // We got a  message.. lets handle it
+                                if (strlen(queue_msg) > 7 && memcmp(queue_msg, "CFREQ:", 6)) {
+                                        frequency = (uint32_t)atofs(queue_msg+6);
+                                        verbose_set_frequency(dev, frequency);
+                                }
+                                free(queue_msg);
+                        }
 		}
 	}
 

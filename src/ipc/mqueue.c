@@ -67,20 +67,21 @@ int mqueue_send(int qid, const char *out) {
 int mqueue_rcv_nw(int qid, char **in) {
         int rc = -1;
         RX_SDR_MSG_BUF msg = {0};
-        // fprintf(stderr, "Trying to receive\n");
+
         if (msgrcv(qid, &msg, sizeof(msg.mtext), 1, MSG_NOERROR | IPC_NOWAIT) == -1) {
               if (errno != ENOMSG) {
                    perror("msgrcv");
                    exit(EXIT_FAILURE);
                }
-               //fprintf(stderr, "no msg available now\n");
-               // No message available now printf("No message available for msgrcv()\n");
         } else {
                 rc = 0;
                 size_t msglen = strlen(msg.mtext);
                 *in = malloc(msglen + 1);
-                memmove(*in, msg.mtext, msglen);
-                *in[msglen] = 0;
+                if (NULL == *in) {
+			perror("malloc");
+			exit(EXIT_FAILURE);
+		}
+		snprintf(*in, msglen+1, msg.mtext);
         }
         
         return rc;
@@ -89,7 +90,6 @@ int mqueue_rcv_nw(int qid, char **in) {
 void mqueue_flush(int qid) {
         char *msg = NULL;
         while (0 == mqueue_rcv_nw(qid, &msg)) {
-                // printf("got message %s\n", msg);
                 free(msg);
         }
 }

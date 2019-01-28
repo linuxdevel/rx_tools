@@ -13,19 +13,24 @@
 int main(int argc, char **argv) {
 	int qid;
         int rc;
-        char *msg = NULL;
+        //char *msg = NULL;
         
         qid = mqueue_open();
         
         mqueue_flush(qid);
         
-	// rc = mqueue_send(qid, "CFREQ:145500000");
-        rc = mqueue_send(qid, "1234567");
-        rc = mqueue_rcv_nw(qid, &msg);
+	rc = mqueue_send(qid, "CFREQ:145500000");
 
-        if (!rc) printf("Received: %s\n", msg);
+	if (rc) {
+		fprintf(stderr, "mqueue_Send failed\n");
+		exit(1);
+	}
+
+        //rc = mqueue_rcv_nw(qid, &msg);
+
+        // if (!rc) printf("Received: %s\n", msg);
         
-        free(msg);
+        //if (msg) free(msg);
         return 0;
 }
 
