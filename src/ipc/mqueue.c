@@ -33,6 +33,7 @@ typedef struct {
            char mtext[MAX_MSG_SZ+1];
 } RX_SDR_MSG_BUF;
 
+// TODO make mqueue_key configurable
 const char *mqueue_key = "/tmp/rx_sdr_ipc.queue";
 
 static void init_q_file();
